@@ -1,4 +1,4 @@
-# airport-hysteria2-bash
+# airport-bash
 【呱呱机场】hysteria2一键安装脚本
 
 ## 安装脚本
