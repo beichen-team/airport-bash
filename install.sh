@@ -162,7 +162,7 @@ auth:
   type: http
   http:
     url: ${PANEL_VERIFY_API}
-    # insecure: false  # Assuming panel supports valid certs, keep 'false' or remove for default 'false'
+    insecure: false
 
 obfs:
   type: salamander
