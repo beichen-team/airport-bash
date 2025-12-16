@@ -1,0 +1,192 @@
+name: 备份仓库
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉取main分支
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: 打包main分支
+        run: |
+          set -euo pipefail
+          repo="${GITHUB_REPOSITORY#*/}"
+          commit_id="${GITHUB_SHA::7}"
+          ts="$(TZ='Asia/Shanghai' date +%Y%m%d%H%M%S)"
+          zip_name="${commit_id}-${ts}.zip"
+
+          zip -r "$zip_name" . -x ".git/*"
+
+          echo "ZIP_NAME=$zip_name" >> $GITHUB_ENV
+          echo "REPO_NAME=$repo" >> $GITHUB_ENV
+          echo "已生成压缩包：$zip_name"
+
+      - name: 上传到OneDrive
+        continue-on-error: true
+        env:
+          CLIENT_ID: ${{ secrets.OD_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.OD_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.OD_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          resp=$(curl -s -X POST https://login.live.com/oauth20_token.srf \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            --data-urlencode "client_id=$CLIENT_ID" \
+            --data-urlencode "client_secret=$CLIENT_SECRET" \
+            --data-urlencode "redirect_uri=https://login.live.com/oauth20_desktop.srf" \
+            --data-urlencode "refresh_token=$REFRESH_TOKEN" \
+            --data-urlencode "grant_type=refresh_token")
+
+          token=$(echo "$resp" | jq -r '.access_token // empty')
+          if [ -z "$token" ]; then
+            echo "OneDrive：获取 access_token 失败"
+            echo "OD_FAILED=1" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          target="/backup/website/code/${REPO_NAME}/${ZIP_NAME}"
+          url="https://api.onedrive.com/v1.0/drive/root:${target}:/content"
+
+          ok=0
+          for i in 1 2 3; do
+            echo "OneDrive：上传尝试 $i"
+            code=$(curl -s -o /tmp/od.txt -w "%{http_code}" -X PUT \
+              -H "Authorization: bearer $token" \
+              -H "Content-Type: application/zip" \
+              --data-binary "@$ZIP_NAME" \
+              "$url" || true)
+
+            if [ "$code" = "200" ] || [ "$code" = "201" ]; then
+              ok=1
+              break
+            fi
+            cat /tmp/od.txt || true
+            sleep 5
+          done
+
+          if [ "$ok" = "1" ]; then
+            echo "OneDrive：上传成功 $target"
+          else
+            echo "OneDrive：上传失败（已重试 3 次）"
+            echo "OD_FAILED=1" >> $GITHUB_ENV
+          fi
+
+      - name: 上传到Dropbox
+        continue-on-error: true
+        env:
+          APP_KEY: ${{ secrets.DBX_APP_KEY }}
+          APP_SECRET: ${{ secrets.DBX_APP_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.DBX_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          resp=$(curl -s https://api.dropbox.com/oauth2/token \
+            -u "$APP_KEY:$APP_SECRET" \
+            -d grant_type=refresh_token \
+            -d refresh_token="$REFRESH_TOKEN")
+
+          token=$(echo "$resp" | jq -r '.access_token // empty')
+          if [ -z "$token" ]; then
+            echo "Dropbox：获取 access_token 失败"
+            echo "DBX_FAILED=1" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          path="/backup/website/code/${REPO_NAME}/${ZIP_NAME}"
+
+          ok=0
+          for i in 1 2 3; do
+            echo "Dropbox：上传尝试 $i"
+            code=$(curl -s -o /tmp/dbx.txt -w "%{http_code}" \
+              -X POST https://content.dropboxapi.com/2/files/upload \
+              -H "Authorization: Bearer $token" \
+              -H "Dropbox-API-Arg: {\"path\":\"$path\",\"mode\":\"add\",\"autorename\":true}" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@$ZIP_NAME" || true)
+
+            if [ "$code" = "200" ]; then
+              ok=1
+              break
+            fi
+            cat /tmp/dbx.txt || true
+            sleep 5
+          done
+
+          if [ "$ok" = "1" ]; then
+            echo "Dropbox：上传成功 $path"
+          else
+            echo "Dropbox：上传失败（已重试 3 次）"
+            echo "DBX_FAILED=1" >> $GITHUB_ENV
+          fi
+
+      - name: 飞书告警
+        if: always()
+        env:
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
+        run: |
+          set -euo pipefail
+
+          od="${OD_FAILED:-0}"
+          gd="${GD_FAILED:-0}"
+          dbx="${DBX_FAILED:-0}"
+
+          if [ "$od" = "0" ] && [ "$gd" = "0" ] && [ "$dbx" = "0" ]; then
+            echo "所有云盘上传均成功，无需飞书提醒"
+            exit 0
+          fi
+
+          failed=""
+          [ "$od" = "1" ] && failed="${failed}OneDrive "
+          [ "$gd" = "1" ] && failed="${failed}GoogleDrive "
+          [ "$dbx" = "1" ] && failed="${failed}Dropbox "
+
+          repo="${GITHUB_REPOSITORY}"
+          commit="${GITHUB_SHA}"
+          run_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          zip_name="${ZIP_NAME:-未知}"
+
+          msg="$(printf '%s\n%s\n%s\n%s\n%s' \
+            ">Github自动备份失败告警" \
+            "" \
+            ">网盘：${failed}"\
+            ">仓库：${repo}")"
+
+          secret="$(printf '%s' "$FEISHU_WEBHOOK_SECRET" | tr -d '\r\n')"
+          timestamp="$(date +%s)"
+
+          string_to_sign="$(printf '%s\n%s' "$timestamp" "$secret")"
+          sign="$(printf '' \
+            | openssl dgst -sha256 -hmac "$string_to_sign" -binary \
+            | openssl base64 -A)"
+
+          payload="$(jq -n \
+            --argjson timestamp "$timestamp" \
+            --arg sign "$sign" \
+            --arg text "$msg" \
+            '{
+              timestamp: $timestamp,
+              sign: $sign,
+              msg_type: "text",
+              content: { text: $text }
+            }')"
+
+          resp="$(curl -s -w "\nHTTP_CODE:%{http_code}\n" -X POST \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$FEISHU_WEBHOOK_URL")"
+
+          echo "$resp"
