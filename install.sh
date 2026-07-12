@@ -152,7 +152,7 @@ write_config() {
   local obfs_pwd="$1" stats_port="$2" stats_secret="$3"
   log_info "写入 Hysteria 配置文件 ${CONFIG_PATH}..."
   cat > "${CONFIG_PATH}" <<EOF
-listen: :443
+listen: :3389
 
 tls:
   cert: ${CERT_PATH}
@@ -204,7 +204,7 @@ panel_upload() {
     --arg ip "$ip" \
     --arg name "$name" \
     --arg domain "$domain" \
-    --arg port "443" \
+    --arg port "3389" \
     --arg insecure "1" \
     --arg sni "$sni" \
     --arg obfs "salamander" \
