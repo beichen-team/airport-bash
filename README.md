@@ -3,13 +3,15 @@
 
 ## 安装脚本
 ```
-#静默安装（推荐）
+# 静默安装（推荐）
+# Debian / Ubuntu / CentOS
 curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/main/hysteria2/install.sh | sh -s -- -s \
   -u "https://airport.beichen.de" \
   -k "your_install_key" \
   -n "JP-Node-01" \
   -d "jp1.example.com"
 
+# Alpine Linux
 wget -qO- https://raw.githubusercontent.com/beichen-team/airport-bash/main/hysteria2/install.sh | sh -s -- -s \
   -u "https://airport.beichen.de" \
   -k "your_install_key" \
