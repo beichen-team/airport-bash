@@ -151,7 +151,7 @@ ensure_cmds() {
   missing=""
   for c in "$@"; do
     if ! command -v "$c" >/dev/null 2>&1; then
-      missing="${missing}${c}"
+      missing="${missing} ${c}"
     fi
   done
 
@@ -166,7 +166,7 @@ ensure_cmds() {
   # shellcheck disable=SC2086
   $PM_UPDATE >/dev/null 2>&1 || true
   # shellcheck disable=SC2086
-  $PM_INSTALL$missing >/dev/null 2>&1 || log_error "依赖安装失败，请检查系统包管理器"
+  $PM_INSTALL $missing >/dev/null 2>&1 || log_error "依赖安装失败，请检查系统包管理器"
 }
 
 # Get system architecture
@@ -198,7 +198,7 @@ rand_port() {
 get_public_ip() {
   ip=$(curl -fsS --max-time 10 https://whatismyip.akamai.com 2>/dev/null \
     || curl -fsS --max-time 10 https://ipecho.net/plain 2>/dev/null || true)
-  ip=$(printf '\%s' "$ip" | tr -d '\r\n ')
+  ip=$(printf '%s' "$ip" | tr -d '\r\n ')
   [ -n "$ip" ] || log_error "获取公网 IP 地址失败"
   echo "$ip"
 }
@@ -227,7 +227,7 @@ Description=Hysteria2 Server
 After=network.target
 
 [Service]
-ExecStart=${EXECUTABLE_INSTALL_PATH} server -c${CONFIG_PATH}
+ExecStart=${EXECUTABLE_INSTALL_PATH} server -c ${CONFIG_PATH}
 User=${HYSTERIA_USER}
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW
@@ -405,7 +405,7 @@ panel_upload() {
   stats_port="$7"
   stats_secret="$8"
 
-  token=$(printf '\%s' "$token" | tr -d '\r\n')
+  token=$(printf '%s' "$token" | tr -d '\r\n')
 
   payload=$(jq -n \
     --arg ip "$ip" \
@@ -418,7 +418,7 @@ panel_upload() {
     --arg obfs_password "$obfs_pwd" \
     --arg traffic_stats_port "$stats_port" \
     --arg traffic_stats_secret "$stats_secret" \
-    '{ip: $ip, name:$name, domain: $domain, port: ($port | tonumber), insecure: ($insecure \vert{} tonumber), sni:$sni, obfs: $obfs, obfs_password:$obfs_password, traffic_stats_port: ($traffic_stats_port \vert{} tonumber), traffic_stats_secret:$traffic_stats_secret}')
+    '{ip: $ip, name: $name, domain: $domain, port: ($port | tonumber), insecure: ($insecure | tonumber), sni: $sni, obfs: $obfs, obfs_password: $obfs_password, traffic_stats_port: ($traffic_stats_port | tonumber), traffic_stats_secret: $traffic_stats_secret}')
 
   curl -fsS -X POST "${PANEL_INSTALL_API}" \
     -H "Authorization: ${token}" \
@@ -463,7 +463,7 @@ main() {
   # 去除面板地址末尾多余的斜杠
   PANEL_BASE="${PANEL_BASE%/}"
 
-  if [ -z "$PANEL_BASE" ] \vert{}\vert{} [ -z "$INSTALL_KEY" ] || [ -z "$NODE_NAME" ] \vert{}\vert{} [ -z "$DOMAIN" ]; then
+  if [ -z "$PANEL_BASE" ] || [ -z "$INSTALL_KEY" ] || [ -z "$NODE_NAME" ] || [ -z "$DOMAIN" ]; then
     log_error "所有必填输入项都不能为空"
   fi
 
@@ -498,7 +498,7 @@ main() {
     echo "-------------------------------------"
     echo "✅ Hysteria2 服务器安装和配置完成!"
     echo "-------------------------------------"
-    echo "系统/服务管理器: ${OS_FAMILY} /${INIT_SYSTEM}"
+    echo "系统/服务管理器: ${OS_FAMILY} / ${INIT_SYSTEM}"
     echo "服务状态: $(get_service_status)"
     echo "节点 ID: ${NODE_ID}"
     echo "面板 API 地址: ${PANEL_BASE}"
