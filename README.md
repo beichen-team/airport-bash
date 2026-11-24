@@ -29,7 +29,7 @@
 #### 交互式安装
 
 ```sh
-curl -fsSL [https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh](https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh) -o /tmp/install.sh && sh /tmp/install.sh && rm -f /tmp/install.sh
+curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh -o /tmp/install.sh && sh /tmp/install.sh && rm -f /tmp/install.sh
 ```
 
 > 若极简系统未预装 `curl`，请先执行 `apt-get update && apt-get install -y curl`。
@@ -38,7 +38,7 @@ curl -fsSL [https://raw.githubusercontent.com/beichen-team/airport-bash/main/ins
 
 ```sh
 # 安装 VLESS（默认 3389 端口 + 自动解析 Cloudflare）
-curl -fsSL [https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh](https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh) | sh -s -- \
+curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   -s -t vless \
   -u "[https://panel.yourdomain.com](https://panel.yourdomain.com)" \
   -k "你的安装密钥" \
@@ -47,7 +47,7 @@ curl -fsSL [https://raw.githubusercontent.com/beichen-team/airport-bash/main/ins
   -p 3389
 
 # 安装 Hysteria2（--no-dns 关闭自动域名解析）
-curl -fsSL [https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh](https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh) | sh -s -- \
+curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   -s -t hy2 --no-dns \
   -u "[https://panel.yourdomain.com](https://panel.yourdomain.com)" \
   -k "你的安装密钥" \
@@ -65,14 +65,14 @@ curl -fsSL [https://raw.githubusercontent.com/beichen-team/airport-bash/main/ins
 #### 交互式安装
 
 ```sh
-apk add --no-cache curl ca-certificates && curl -fsSL [https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh](https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh) -o /tmp/install.sh && sh /tmp/install.sh && rm -f /tmp/install.sh
+apk add --no-cache curl ca-certificates && curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh -o /tmp/install.sh && sh /tmp/install.sh && rm -f /tmp/install.sh
 ```
 
 #### 静默安装
 
 ```sh
 # 安装 VLESS（默认 3389 端口 + 自动解析 Cloudflare）
-apk add --no-cache curl ca-certificates && curl -fsSL [https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh](https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh) | sh -s -- \
+apk add --no-cache curl ca-certificates && curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   -s -t vless \
   -u "[https://panel.yourdomain.com](https://panel.yourdomain.com)" \
   -k "你的安装密钥" \
@@ -81,7 +81,7 @@ apk add --no-cache curl ca-certificates && curl -fsSL [https://raw.githubusercon
   -p 3389
 
 # 安装 Hysteria2（--no-dns 关闭自动域名解析）
-apk add --no-cache curl ca-certificates && curl -fsSL [https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh](https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh) | sh -s -- \
+apk add --no-cache curl ca-certificates && curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   -s -t hy2 --no-dns \
   -u "[https://panel.yourdomain.com](https://panel.yourdomain.com)" \
   -k "你的安装密钥" \
@@ -98,7 +98,7 @@ apk add --no-cache curl ca-certificates && curl -fsSL [https://raw.githubusercon
 
 ```powershell
 $NodeIP = "1.2.3.4"
-$RawUrl = "[https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh](https://raw.githubusercontent.com/beichen-team/airport-bash/main/install.sh)"
+$RawUrl = "https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh"
 
 # Debian 远程静默安装 VLESS
 ssh "root@$NodeIP" "curl -fsSL $RawUrl | sh -s -- -s -t vless -u '[https://panel.yourdomain.com](https://panel.yourdomain.com)' -k '你的安装密钥' -n 'HK-VLESS-01' -d 'vl-hk1.yourdomain.com' -p 3389"
