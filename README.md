@@ -40,7 +40,7 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
 # 安装 VLESS（默认 3389 端口 + 自动解析 Cloudflare）
 curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   -s -t vless \
-  -u "[https://panel.yourdomain.com](https://panel.yourdomain.com)" \
+  -u "https://airport.beichen.de" \
   -k "你的安装密钥" \
   -n "HK-VLESS-01" \
   -d "vl-hk1.yourdomain.com" \
@@ -49,7 +49,7 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
 # 安装 Hysteria2（--no-dns 关闭自动域名解析）
 curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   -s -t hy2 --no-dns \
-  -u "[https://panel.yourdomain.com](https://panel.yourdomain.com)" \
+  -u "https://airport.beichen.de" \
   -k "你的安装密钥" \
   -n "HK-HY2-01" \
   -d "hy-hk1.yourdomain.com" \
@@ -74,7 +74,7 @@ apk add --no-cache curl ca-certificates && curl -fsSL https://raw.githubusercont
 # 安装 VLESS（默认 3389 端口 + 自动解析 Cloudflare）
 apk add --no-cache curl ca-certificates && curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   -s -t vless \
-  -u "[https://panel.yourdomain.com](https://panel.yourdomain.com)" \
+  -u "https://airport.beichen.de" \
   -k "你的安装密钥" \
   -n "HK-VLESS-01" \
   -d "vl-hk1.yourdomain.com" \
@@ -83,7 +83,7 @@ apk add --no-cache curl ca-certificates && curl -fsSL https://raw.githubusercont
 # 安装 Hysteria2（--no-dns 关闭自动域名解析）
 apk add --no-cache curl ca-certificates && curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   -s -t hy2 --no-dns \
-  -u "[https://panel.yourdomain.com](https://panel.yourdomain.com)" \
+  -u "https://airport.beichen.de" \
   -k "你的安装密钥" \
   -n "HK-HY2-01" \
   -d "hy-hk1.yourdomain.com" \
@@ -101,10 +101,10 @@ $NodeIP = "1.2.3.4"
 $RawUrl = "https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh"
 
 # Debian 远程静默安装 VLESS
-ssh "root@$NodeIP" "curl -fsSL $RawUrl | sh -s -- -s -t vless -u '[https://panel.yourdomain.com](https://panel.yourdomain.com)' -k '你的安装密钥' -n 'HK-VLESS-01' -d 'vl-hk1.yourdomain.com' -p 3389"
+ssh "root@$NodeIP" "curl -fsSL $RawUrl | sh -s -- -s -t vless -u 'https://airport.beichen.de' -k '你的安装密钥' -n 'HK-VLESS-01' -d 'vl-hk1.yourdomain.com' -p 3389"
 
 # Alpine 远程静默安装 VLESS
-ssh "root@$NodeIP" "apk add --no-cache curl ca-certificates && curl -fsSL $RawUrl | sh -s -- -s -t vless -u '[https://panel.yourdomain.com](https://panel.yourdomain.com)' -k '你的安装密钥' -n 'HK-VLESS-01' -d 'vl-hk1.yourdomain.com' -p 3389"
+ssh "root@$NodeIP" "apk add --no-cache curl ca-certificates && curl -fsSL $RawUrl | sh -s -- -s -t vless -u 'https://airport.beichen.de' -k '你的安装密钥' -n 'HK-VLESS-01' -d 'vl-hk1.yourdomain.com' -p 3389"
 
 # Debian 远程交互式安装（需带 -t 分配终端）
 ssh -t "root@$NodeIP" "curl -fsSL $RawUrl -o /tmp/install.sh && sh /tmp/install.sh && rm -f /tmp/install.sh"
