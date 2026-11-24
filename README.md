@@ -49,39 +49,12 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
   --key "你的安装密钥" \
   --name "HK-VLESS-01" \
   --domain "vl-hk1.example.com" \
+  --sni "vl-hk1.example.com" \
   --port 3389 \
   --auto-dns 1
 ```
 
 `--auto-dns 1` 表示启用自动解析；改为 `--auto-dns 0` 或使用 `--no-dns` 表示关闭。若不指定该参数，脚本仍会询问是否启用自动解析。
-
-### 4. 下载脚本后本地安装
-
-适合需要先保存脚本、检查内容或重复执行的场景：
-
-```bash
-curl -fL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh -o /root/i.sh
-chmod +x /root/i.sh
-```
-
-交互式安装：
-
-```bash
-sh /root/i.sh
-```
-
-指定参数安装：
-
-```bash
-sh /root/i.sh \
-  --type vless \
-  --url "https://airport.example.com" \
-  --key "你的安装密钥" \
-  --name "HK-VLESS-01" \
-  --domain "vl-hk1.example.com" \
-  --port 3389 \
-  --auto-dns 1
-```
 
 ## Alpine Linux 安装
 
@@ -129,32 +102,7 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
   --key "你的安装密钥" \
   --name "HK-VLESS-01" \
   --domain "vl-hk1.example.com" \
-  --port 3389 \
-  --auto-dns 1
-```
-
-### 4. 下载脚本后本地安装
-
-```sh
-curl -fL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh -o /root/i.sh
-chmod +x /root/i.sh
-```
-
-交互式安装：
-
-```sh
-sh /root/i.sh
-```
-
-指定参数安装：
-
-```sh
-sh /root/i.sh \
-  --type vless \
-  --url "https://airport.example.com" \
-  --key "你的安装密钥" \
-  --name "HK-VLESS-01" \
-  --domain "vl-hk1.example.com" \
+  --sni "vl-hk1.example.com" \
   --port 3389 \
   --auto-dns 1
 ```
