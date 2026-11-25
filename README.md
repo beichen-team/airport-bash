@@ -1,5 +1,5 @@
 # airport-bash
-【北辰机场】hysteria2一键安装脚本
+【北辰机场】Hysteria2 & VLESS 统一一键安装与卸载脚本（支持零 Token 证书自动同步）
 
 ## Debian / Ubuntu 安装
 
@@ -10,10 +10,10 @@ apt-get update
 apt-get install -y curl ca-certificates
 ```
 
-脚本运行时会按所选协议检查并安装其他依赖：
+脚本运行时会按所选协议自动检查并安装其他依赖：
 
-- Hysteria2：`curl`、`jq`、`openssl`
-- VLESS：`curl`、`jq`、`openssl`、`unzip`
+- Hysteria2：`curl`、`jq`、`openssl`、`tar`
+- VLESS：`curl`、`jq`、`openssl`、`tar`、`unzip`
 
 ### 2. 在线交互式安装
 
@@ -32,7 +32,7 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
 ```bash
 curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   --type hysteria2 \
-  --url "https://airport.example.com" \
+  --url "[https://airport.example.com](https://airport.example.com)" \
   --key "你的安装密钥" \
   --name "HK-HY2-01" \
   --domain "hy2-hk1.example.com" \
@@ -45,16 +45,15 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
 ```bash
 curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   --type vless \
-  --url "https://airport.example.com" \
+  --url "[https://airport.example.com](https://airport.example.com)" \
   --key "你的安装密钥" \
   --name "HK-VLESS-01" \
   --domain "vl-hk1.example.com" \
-  --sni "vl-hk1.example.com" \
   --port 3389 \
   --auto-dns 1
 ```
 
-`--auto-dns 1` 表示启用自动解析；改为 `--auto-dns 0` 或使用 `--no-dns` 表示关闭。若不指定该参数，脚本仍会询问是否启用自动解析。
+`--auto-dns 1` 表示启用自动解析，`--auto-dns 0` 表示关闭；若不指定该参数，脚本会交互询问。未指定 `--sni` 时默认与 `--domain` 一致，跳过证书校验（`--insecure`）默认关闭。
 
 ## Alpine Linux 安装
 
@@ -65,10 +64,10 @@ apk update
 apk add --no-cache curl ca-certificates
 ```
 
-脚本运行时会按所选协议检查并安装其他依赖：
+脚本运行时会按所选协议自动检查并安装其他依赖：
 
-- Hysteria2：`curl`、`jq`、`openssl`
-- VLESS：`curl`、`jq`、`openssl`、`unzip`
+- Hysteria2：`curl`、`jq`、`openssl`、`tar`
+- VLESS：`curl`、`jq`、`openssl`、`tar`、`unzip`
 
 ### 2. 在线交互式安装
 
@@ -85,7 +84,7 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
 ```sh
 curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   --type hysteria2 \
-  --url "https://airport.example.com" \
+  --url "[https://airport.example.com](https://airport.example.com)" \
   --key "你的安装密钥" \
   --name "HK-HY2-01" \
   --domain "hy2-hk1.example.com" \
@@ -98,11 +97,10 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
 ```sh
 curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | sh -s -- \
   --type vless \
-  --url "https://airport.example.com" \
+  --url "[https://airport.example.com](https://airport.example.com)" \
   --key "你的安装密钥" \
   --name "HK-VLESS-01" \
   --domain "vl-hk1.example.com" \
-  --sni "vl-hk1.example.com" \
   --port 3389 \
   --auto-dns 1
 ```
@@ -119,17 +117,18 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
 | `-n`, `--name` | 节点名称 | 交互输入 |
 | `-d`, `--domain` | 节点域名 | 交互输入 |
 | `-p`, `--port` | 对外监听端口 | `3389` |
-| `--sni` | 自签名证书 SNI | `www.bing.com` |
+| `--sni` | TLS SNI | 与 `--domain` 一致 |
+| `--insecure 1\|0` | 是否跳过证书校验（`0` 关闭，`1` 开启） | `0` |
 | `--prefix` | VLESS 鉴权路径前缀 | `/w/` |
-| `--auto-dns 1\|0` | 是否启用 Cloudflare 自动解析 | 未指定时交互询问 |
-| `--no-dns` | 关闭自动解析，等同于 `--auto-dns 0` | - |
+| `--auto-dns 1\|0` | 是否启用 Cloudflare 自动解析（仅支持 `1` 或 `0`） | 未指定时交互询问 |
+| `--cert-api` | 面板证书临时下载链接接口地址 | `<PANEL_BASE>/api/v1/cert/download` |
 | `-h`, `--help` | 显示帮助 | - |
 
 注意：
 
 - `curl ... | sh -s -- 参数...` 中，`sh -s --` 的 `-s` 是 Shell 从标准输入读取脚本的语法，**不是静默安装参数，不要删除**。
 - 脚本没有静默安装模式，安装过程会显示日志和下载进度。
-- 如果希望全程不再询问，请提供全部必填参数，并明确指定 `--auto-dns 1` 或 `--no-dns`。
+- 如果希望全程不再询问，请提供全部必填参数，并明确指定 `--auto-dns 1` 或 `--auto-dns 0`。
 - 未提供必填参数时，脚本会尝试从终端读取输入；在没有可用终端的环境中会报错退出。
 
 查看当前脚本支持的完整帮助：
@@ -146,11 +145,13 @@ sh i.sh --help
 | --- | --- | --- |
 | `PROTOCOL` | `--type` | `hysteria2` 或 `vless` |
 | `PANEL_BASE` | `--url` | 面板地址 |
+| `PANEL_CERT_API` | `--cert-api` | 证书下载接口，默认 `<PANEL_BASE>/api/v1/cert/download` |
 | `INSTALL_KEY` | `--key` | 安装密钥 |
 | `NODE_NAME` | `--name` | 节点名称 |
 | `DOMAIN` | `--domain` | 节点域名 |
 | `LISTEN_PORT` | `--port` | 对外监听端口，默认 `3389` |
-| `SNI` | `--sni` | 证书 SNI，默认 `www.bing.com` |
+| `SNI` | `--sni` | TLS SNI，默认与 `DOMAIN` 一致 |
+| `INSECURE` | `--insecure` | 是否跳过证书校验，`0` 关闭、`1` 开启，默认 `0` |
 | `PATH_PREFIX` | `--prefix` | VLESS 鉴权路径前缀，默认 `/w/` |
 | `AUTO_DNS` | `--auto-dns` | 自动解析开关，`1` 开启、`0` 关闭 |
 | `XRAY_INTERNAL_PORT` | 无命令行参数 | VLESS 的 Xray 本机监听端口，默认 `18086` |
@@ -161,7 +162,7 @@ sh i.sh --help
 ```bash
 curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/i.sh | \
   PROTOCOL=vless \
-  PANEL_BASE="https://airport.example.com" \
+  PANEL_BASE="[https://airport.example.com](https://airport.example.com)" \
   INSTALL_KEY="你的安装密钥" \
   NODE_NAME="HK-VLESS-01" \
   DOMAIN="vl-hk1.example.com" \
@@ -169,6 +170,86 @@ curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/head
   AUTO_DNS=1 \
   sh -s
 ```
+
+## 证书下发与每日自动同步
+
+节点不再生成自签名证书，也不会在本地保存 GitHub Token。安装与日常更新统一采用**零 Token 临时下载链接**机制：
+
+1. 安装脚本先基于本机 `/etc/machine-id`（缺失时随机生成）持久化机器指纹 `fingerprint.sha256`（与证书解耦，避免多节点共享泛域名证书产生指纹冲突）。
+2. 使用安装密钥与机器指纹向面板换取授权 Token，再请求 `GET <PANEL_BASE>/api/v1/cert/download?domain=<DOMAIN>&sha256=<本地证书sha256>`。
+3. 面板返回短期预签名下载链接（`data.download_url`），节点直接下载 `.tar.gz` 证书包，校验 PEM 格式、公私钥匹配及有效期后写入目标路径并修正权限为 `640`。
+4. 安装完成后自动配置每日同步任务（`/usr/local/bin/guaplus-cert-sync.sh`），检测到证书更新时自动原子替换并重启对应服务。
+
+### 面板证书接口返回约定
+
+```json
+{
+  "data": {
+    "up_to_date": false,
+    "sha256": "证书小写sha256指纹",
+    "download_url": "[https://objects.githubusercontent.com/](https://objects.githubusercontent.com/)..."
+  }
+}
+```
+
+- 当本地传入的 `sha256` 已为最新时，后端可直接返回 `up_to_date: true`，节点跳过下载。
+- 压缩包（`.tar.gz`）内支持 `cert.crt` / `fullchain.pem` / `fullchain.cer` / `cert.pem` 与 `private.key` / `privkey.pem` / `key.pem`。
+
+### 手动触发与查看定时同步
+
+```bash
+# 手动立即同步一次证书
+/usr/local/bin/guaplus-cert-sync.sh
+
+# Debian / Ubuntu (systemd) 查看定时器状态
+systemctl status guaplus-cert-sync.timer --no-pager
+systemctl list-timers guaplus-cert-sync.timer --no-pager
+
+# Alpine Linux (OpenRC) 查看定时任务脚本与 crond 状态
+ls -l /etc/periodic/daily/guaplus-cert-sync
+rc-service crond status
+```
+
+## 完全卸载
+
+提供独立卸载脚本 `uninstall.sh`，兼容 Debian / Ubuntu（systemd）与 Alpine Linux（OpenRC），支持交互选择或指定参数一键彻底卸载。
+
+### 1. 在线交互式卸载
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/u.sh | sh -s
+```
+
+脚本会自动检测本机已安装的组件，并提示选择全部卸载、仅卸载 Hysteria2 或仅卸载 VLESS。
+
+### 2. 在线指定参数直接卸载
+
+```bash
+# 彻底卸载全部组件（Hysteria2 + VLESS + 证书自动同步），跳过确认
+curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/u.sh | sh -s -- --type all --yes
+
+# 仅彻底卸载 Hysteria2
+curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/u.sh | sh -s -- --type hysteria2 --yes
+
+# 仅彻底卸载 VLESS (Xray + Gateway)
+curl -fsSL https://raw.githubusercontent.com/beichen-team/airport-bash/refs/heads/main/u.sh | sh -s -- --type vless --yes
+```
+
+### 卸载脚本参数
+
+| 参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `-t`, `--type` | 卸载目标：`all`、`hy2`、`hysteria2` 或 `vless` | 交互选择（默认 `all`） |
+| `-y`, `--yes` | 跳过二次确认直接执行（环境变量 `AUTO_YES=1`） | 关闭 |
+| `-h`, `--help` | 显示帮助信息 | - |
+
+### 卸载清理范围
+
+- **服务与定时任务**：停止并移除 `hysteria-server`、`xray-backend`、`airport-gateway` 服务文件；当节点上所有协议均已卸载时，自动清理 `guaplus-cert-sync.timer/service`（systemd）或 `/etc/periodic/daily/guaplus-cert-sync`（OpenRC）。
+- **程序与资源文件**：删除 `/usr/local/bin/hysteria`、`/usr/local/bin/xray`、`/usr/local/bin/airport-gateway`、`/usr/local/bin/guaplus-cert-sync.sh` 及 `/usr/local/share/xray`。
+- **配置、证书与日志**：删除 `/etc/hysteria`、`/etc/xray-gate`、`/etc/guaplus`、对应 OpenRC 日志与 PID 文件以及残留临时文件。
+- **专用系统用户**：删除 `hysteria`、`xraygate` 用户、用户组及其家目录 `/var/lib/hysteria`、`/var/lib/xraygate`。
+- **保留项**：不会卸载 `curl`、`jq`、`openssl`、`tar`、`unzip` 等系统基础包，也不会停用 Alpine 的 `crond`；机场面板后台的节点记录需在面板侧手动删除。
 
 ## 服务管理与日志查询
 
@@ -279,8 +360,9 @@ ps aux | grep -E 'hysteria|xray|airport-gateway' | grep -v grep
 | 程序 | `/usr/local/bin/hysteria` |
 | 配置目录 | `/etc/hysteria/` |
 | 主配置文件 | `/etc/hysteria/config.yaml` |
-| 自签名证书 | `/etc/hysteria/cert.crt` |
+| TLS 证书 | `/etc/hysteria/cert.crt` |
 | 私钥 | `/etc/hysteria/private.key` |
+| 机器指纹 | `/etc/hysteria/fingerprint.sha256` |
 | 服务名 | `hysteria-server` |
 | 默认监听端口 | `3389/UDP` |
 
@@ -293,13 +375,23 @@ ps aux | grep -E 'hysteria|xray|airport-gateway' | grep -v grep
 | 配置目录 | `/etc/xray-gate/` |
 | Xray 配置 | `/etc/xray-gate/xray.json` |
 | Gateway 环境配置 | `/etc/xray-gate/gateway.env` |
-| 自签名证书 | `/etc/xray-gate/cert.crt` |
+| TLS 证书 | `/etc/xray-gate/cert.crt` |
 | 私钥 | `/etc/xray-gate/private.key` |
+| 机器指纹 | `/etc/xray-gate/fingerprint.sha256` |
 | 服务名 | `xray-backend`、`airport-gateway` |
 | 对外默认监听端口 | `3389/TCP` |
 | Xray 本机上游端口 | `127.0.0.1:18086` |
 | Xray WebSocket 路径 | `/ws` |
 | VLESS 鉴权路径前缀 | `/w/` |
+
+### 证书自动同步
+
+| 项目 | 路径 / 说明 |
+| --- | --- |
+| 同步脚本 | `/usr/local/bin/guaplus-cert-sync.sh` |
+| 同步配置目录 | `/etc/guaplus/cert-sync.d/`（权限 `600`） |
+| systemd 定时任务 | `guaplus-cert-sync.timer`（每日 09:00 执行） |
+| OpenRC 定时任务 | `/etc/periodic/daily/guaplus-cert-sync` |
 
 脚本还会为流量统计服务随机生成一个 `20000` 至 `60000` 范围内的端口，并将其写入对应配置文件。需要核对该端口时，可查看：
 
@@ -311,4 +403,4 @@ cat /etc/hysteria/config.yaml
 cat /etc/xray-gate/gateway.env
 ```
 
-请勿随意删除或覆盖配置目录中的证书、私钥和配置文件。重新安装时脚本会在证书文件已存在的情况下复用现有证书。
+请勿随意删除配置目录中的机器指纹文件（`fingerprint.sha256`）和同步配置，否则可能导致节点鉴权或证书自动同步失败；重新安装时会从面板重新拉取最新证书并覆盖本地证书文件[cite: 2]。
